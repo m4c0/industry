@@ -4,21 +4,29 @@
 
 import casein;
 import dotz;
-import mtx;
-import rng;
-import sith;
 import vee;
 import voo;
 
 static struct upc {
   dotz::vec2 aspect;
-  dotz::vec2 displ { 8, 8 };
+  dotz::vec2 displ {};
   float scale = 6;
 } g_pc;
 
+static constexpr const dotz::vec2 grid_size { 16 };
+
 static void translate() {
   auto d = casein::mouse_rel / casein::window_size;
-  g_pc.displ = g_pc.displ - d * 100.0;
+  auto nxt = g_pc.displ - d * 100.0;
+
+  auto min = (g_pc.aspect - 1.0) * g_pc.scale / 2.0;
+  auto max = grid_size - min - g_pc.scale;
+  nxt.x = dotz::min(nxt.x, max.x);
+  nxt.y = dotz::min(nxt.y, max.y);
+  nxt.x = dotz::max(nxt.x, min.x);
+  nxt.y = dotz::max(nxt.y, min.y);
+
+  g_pc.displ = nxt;
 }
 
 struct init : public voo::casein_thread {
@@ -39,6 +47,9 @@ struct init : public voo::casein_thread {
       } else {
         g_pc.aspect = { 1.0f, 1.0f / sw.aspect() };
       }
+      auto min = (g_pc.aspect - 1.0) * g_pc.scale / 2.0;
+      auto max = grid_size - min - g_pc.scale;
+      g_pc.displ = (max + min) / 2.0;
 
       ots_loop(dq, sw, [&](auto cb) {
         oqr.run(cb, sw.extent(), [&] {
