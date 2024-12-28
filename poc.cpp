@@ -17,16 +17,7 @@ static constexpr const dotz::vec2 grid_size { 16 };
 
 static void translate() {
   auto d = casein::mouse_rel / casein::window_size;
-  auto nxt = g_pc.displ - d * 100.0;
-
-  auto min = (g_pc.aspect - 1.0) * g_pc.scale / 2.0;
-  auto max = grid_size - min - g_pc.scale;
-  nxt.x = dotz::min(nxt.x, max.x);
-  nxt.y = dotz::min(nxt.y, max.y);
-  nxt.x = dotz::max(nxt.x, min.x);
-  nxt.y = dotz::max(nxt.y, min.y);
-
-  g_pc.displ = nxt;
+  g_pc.displ = g_pc.displ - d * 100.0;
 }
 
 struct init : public voo::casein_thread {
@@ -52,6 +43,13 @@ struct init : public voo::casein_thread {
       g_pc.displ = (max + min) / 2.0;
 
       ots_loop(dq, sw, [&](auto cb) {
+        auto nxt = g_pc.displ;
+        if (nxt.x > max.x) nxt.x -= (nxt.x - max.x) * 0.3;
+        if (nxt.y > max.y) nxt.y -= (nxt.y - max.y) * 0.3;
+        if (nxt.x < min.x) nxt.x -= (nxt.x - min.x) * 0.3;
+        if (nxt.y < min.y) nxt.y -= (nxt.y - min.y) * 0.3;
+        g_pc.displ = nxt;
+
         oqr.run(cb, sw.extent(), [&] {
           vee::cmd_push_vert_frag_constants(cb, *pl, &g_pc);
         });
