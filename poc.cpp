@@ -12,7 +12,7 @@ import voo;
 
 static struct upc {
   dotz::vec2 aspect;
-  dotz::vec2 displ {};
+  dotz::vec2 displ { 8, 8 };
   float scale = 6;
 } g_pc;
 
