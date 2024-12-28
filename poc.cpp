@@ -12,10 +12,21 @@ import voo;
 
 static struct upc {
   dotz::vec2 aspect;
+  dotz::vec2 displ {};
   float scale = 6;
 } g_pc;
 
-struct : public voo::casein_thread {
+static void translate() {
+  auto d = casein::mouse_rel / casein::window_size;
+  g_pc.displ = g_pc.displ - d * 100.0;
+}
+
+struct init : public voo::casein_thread {
+  init() : casein_thread {} {
+    using namespace casein;
+    handle(MOUSE_MOVE, M_WHEEL, translate);
+  }
+
   void run() {
     main_loop("poc-voo", [&](auto & dq, auto & sw) {
       vee::pipeline_layout pl = vee::create_pipeline_layout({
