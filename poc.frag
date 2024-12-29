@@ -6,10 +6,14 @@ layout(push_constant) uniform u_ {
   float scale;
 };
 
+layout(binding = 0) buffer b_ {
+  uint sprites[];
+};
+
 layout(location = 0) in  vec2 frag_pos;
 layout(location = 0) out vec4 colour;
 
-const vec2 grid_size = vec2(16);
+const ivec2 grid_size = ivec2(16);
 
 void main() {
   float n = scale;
@@ -20,9 +24,10 @@ void main() {
   float d = max(x, y);
 
   vec3 c = vec3(0);
-  vec2 id = floor(p);
+  ivec2 id = ivec2(floor(p));
   if (min(id.x, id.y) >= 0 && id.x < grid_size.x && id.y < grid_size.y) {
-    c = vec3(d, id / grid_size);
+    uint spr = sprites[id.y * grid_size.x + id.x];
+    c = vec3(spr);
   }
 
   colour = vec4(c, 1);
