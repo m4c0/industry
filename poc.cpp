@@ -4,6 +4,7 @@
 
 import casein;
 import dotz;
+import rng;
 import vee;
 import voo;
 
@@ -13,15 +14,21 @@ static struct upc {
   float scale = 6;
 } g_pc;
 
-static constexpr const dotz::vec2 grid_size { 16 };
+static constexpr const dotz::ivec2 grid_size { 16 };
 
 static void load_grid(voo::h2l_buffer * buf) {
   voo::mapmem m { buf->host_memory() };
   auto ptr = static_cast<unsigned *>(*m);
+  auto pp = ptr;
   for (auto y = 0; y < grid_size.y; y++) {
     for (auto x = 0; x < grid_size.x; x++, ptr++) {
       *ptr = (x + y) % 2;
     }
+  }
+  for (auto n = 0; n < 100; n++) {
+    unsigned x = rng::rand(grid_size.x);
+    unsigned y = rng::rand(grid_size.y);
+    pp[y * grid_size.x + x] ^= 1;
   }
 }
 
