@@ -12,6 +12,7 @@ layout(binding = 0) buffer b_ {
 
 layout(location = 0) in  vec2 frag_pos;
 layout(location = 0) out vec4 colour;
+layout(location = 1) out vec4 selection;
 
 const ivec2 grid_size = ivec2(16);
 
@@ -23,6 +24,7 @@ void main() {
   float y = smoothstep(0.99, 1.0, cos(p.y * 6.28));
   float d = max(x, y);
 
+  vec4 sel = vec4(0);
   vec3 c = vec3(0);
   ivec2 id = ivec2(floor(p));
   if (min(id.x, id.y) >= 0 && id.x < grid_size.x && id.y < grid_size.y) {
@@ -36,9 +38,9 @@ void main() {
     vec2 f = abs(fract(p) * 2.0 - 1.0);
 
     vec3 c0 = vec3(spr);
-    vec3 cx = mix(c0, vec3(spr_x), smoothstep(0.9, 1.0, f.x) * 0.5);
-    vec3 cy = mix(c0, vec3(spr_y), smoothstep(0.9, 1.0, f.y) * 0.5);
-    vec3 cxy = mix(c0, vec3(spr_xy), smoothstep(0.9, 1.0, f.x * f.y) * 0.5);
+    vec3 cx = mix(c0, vec3(spr_x), smoothstep(0.95, 1.0, f.x) * 0.5);
+    vec3 cy = mix(c0, vec3(spr_y), smoothstep(0.95, 1.0, f.y) * 0.5);
+    vec3 cxy = mix(c0, vec3(spr_xy), smoothstep(0.95, 1.0, f.x * f.y) * 0.5);
     c = (spr == spr_y && spr == spr_x)
       ? cxy
       : (spr == spr_x)
@@ -46,7 +48,10 @@ void main() {
       : (spr == spr_y)
       ? cx
       : (f.x > f.y ? cx : cy);
+    sel.xy = id / 256.0;
+    sel.w = 1;
   }
 
   colour = vec4(c, 1);
+  selection = sel;
 }
