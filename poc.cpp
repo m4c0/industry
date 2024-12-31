@@ -4,6 +4,7 @@
 
 import casein;
 import dotz;
+import hai;
 import rng;
 import silog;
 import vee;
@@ -74,6 +75,8 @@ struct init : public voo::casein_thread {
         vee::vert_frag_push_constant_range<upc>()
       });
 
+      auto ks = hai::view { vee::specialisation_map_entry<unsigned>() };
+      auto frag_k = vee::specialisation_info(&grid_size, ks);
       voo::one_quad oq { pd };
       auto p = vee::create_graphics_pipeline({
           .pipeline_layout = *pl,
@@ -84,7 +87,7 @@ struct init : public voo::casein_thread {
           },
           .shaders {
             voo::shader("poc.vert.spv").pipeline_vert_stage(),
-            voo::shader("poc.frag.spv").pipeline_frag_stage(),
+            voo::shader("poc.frag.spv").pipeline_frag_stage("main", &frag_k),
           },
           .bindings { oq.vertex_input_bind() },
           .attributes { oq.vertex_attribute(0) },
