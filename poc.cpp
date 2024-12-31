@@ -19,12 +19,19 @@ static struct upc {
 } g_pc;
 static dotz::ivec2 g_selection = nil;
 
+enum sprite {
+  s_blank   = 0,
+  s_clicker = 1,
+};
 static constexpr const unsigned grid_size = 16;
+static sprite g_sprites[grid_size][grid_size] {};
 
 static void load_grid(voo::h2l_buffer * buf) {
   voo::mapmem m { buf->host_memory() };
   auto ptr = static_cast<unsigned *>(*m);
-  for (auto i = 0; i < grid_size * grid_size; i++, ptr++) *ptr = 0;
+  for (auto & row : g_sprites)
+    for (auto spr : row)
+      *ptr++ = spr;
 }
 
 static void translate() {
@@ -39,6 +46,8 @@ struct init : public voo::casein_thread {
     handle(MOUSE_DOWN, [] {
       silog::log(silog::debug, "%d %d", g_selection.x, g_selection.y);
     });
+
+    g_sprites[grid_size / 2][grid_size / 2] = s_clicker;
   }
 
   void run() {
@@ -100,7 +109,7 @@ struct init : public voo::casein_thread {
       }
       auto min = (g_pc.aspect - 1.0) * g_pc.scale / 2.0;
       auto max = dotz::ivec2 { grid_size } - min - g_pc.scale;
-      g_pc.displ = (max + min) / 2.0;
+      g_pc.displ = (max + min) / 2.0 + 0.5;
 
       extent_loop(dq.queue(), sw, [&] {
         auto nxt = g_pc.displ;

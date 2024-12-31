@@ -16,11 +16,16 @@ layout(location = 0) in  vec2 frag_pos;
 layout(location = 0) out vec4 colour;
 layout(location = 1) out vec4 selection;
 
+vec3 blank(vec2 p) { return vec3(0); }
+
+vec3 clicker(vec2 p) {
+  return vec3(1, 0, 0);
+}
+
 vec3 sprite(vec2 p, uint id) {
   switch (id) {
-    case  0: return vec3(0);
-    case  1: return vec3(0, 0, 1);
-    case  2: return vec3(0, 1, 0);
+    case  0: return blank(p);
+    case  1: return clicker(p);
     default: return vec3(1, 0, 1);
   }
 }
