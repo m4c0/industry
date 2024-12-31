@@ -18,21 +18,21 @@ static struct upc {
 } g_pc;
 static dotz::ivec2 g_selection = nil;
 
-static constexpr const dotz::ivec2 grid_size { 16 };
+static constexpr const unsigned grid_size = 16;
 
 static void load_grid(voo::h2l_buffer * buf) {
   voo::mapmem m { buf->host_memory() };
   auto ptr = static_cast<unsigned *>(*m);
   auto pp = ptr;
-  for (auto y = 0; y < grid_size.y; y++) {
-    for (auto x = 0; x < grid_size.x; x++, ptr++) {
+  for (auto y = 0; y < grid_size; y++) {
+    for (auto x = 0; x < grid_size; x++, ptr++) {
       *ptr = (x + y) % 2;
     }
   }
   for (auto n = 0; n < 100; n++) {
-    unsigned x = rng::rand(grid_size.x);
-    unsigned y = rng::rand(grid_size.y);
-    pp[y * grid_size.x + x] ^= 1;
+    unsigned x = rng::rand(grid_size);
+    unsigned y = rng::rand(grid_size);
+    pp[y * grid_size + x] ^= 1;
   }
 }
 
@@ -73,11 +73,24 @@ struct init : public voo::casein_thread {
       vee::pipeline_layout pl = vee::create_pipeline_layout({ *dsl }, {
         vee::vert_frag_push_constant_range<upc>()
       });
-      voo::one_quad_render oqr { "poc", pd, *rp, *pl, {
-        vee::colour_blend_classic(), vee::colour_blend_none()
-      }};
 
-      constexpr const unsigned sz = grid_size.x * grid_size.y * sizeof(unsigned);
+      voo::one_quad oq { pd };
+      auto p = vee::create_graphics_pipeline({
+          .pipeline_layout = *pl,
+          .render_pass = *rp,
+          .blends {
+            vee::colour_blend_classic(),
+            vee::colour_blend_none(),
+          },
+          .shaders {
+            voo::shader("poc.vert.spv").pipeline_vert_stage(),
+            voo::shader("poc.frag.spv").pipeline_frag_stage(),
+          },
+          .bindings { oq.vertex_input_bind() },
+          .attributes { oq.vertex_attribute(0) },
+      });
+
+      constexpr const unsigned sz = grid_size * grid_size * sizeof(unsigned);
       auto buf = voo::updater { dq.queue(), &load_grid, dq, sz };
       buf.run_once();
 
@@ -93,7 +106,7 @@ struct init : public voo::casein_thread {
         g_pc.aspect = { 1.0f, 1.0f / sw.aspect() };
       }
       auto min = (g_pc.aspect - 1.0) * g_pc.scale / 2.0;
-      auto max = grid_size - min - g_pc.scale;
+      auto max = dotz::ivec2 { grid_size } - min - g_pc.scale;
       g_pc.displ = (max + min) / 2.0;
 
       extent_loop(dq.queue(), sw, [&] {
@@ -117,7 +130,10 @@ struct init : public voo::casein_thread {
           }};
           vee::cmd_push_vert_frag_constants(*scb, *pl, &g_pc);
           vee::cmd_bind_descriptor_set(*scb, *pl, 0, dset);
-          oqr.run(*scb, sw.extent());
+          vee::cmd_set_viewport(*scb, sw.extent());
+          vee::cmd_set_scissor(*scb, sw.extent());
+          vee::cmd_bind_gr_pipeline(*scb, *p);
+          oq.run(*scb, 0, 1);
 
           int mx = casein::mouse_pos.x * casein::screen_scale_factor;
           int my = casein::mouse_pos.y * casein::screen_scale_factor;
