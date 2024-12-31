@@ -24,17 +24,7 @@ static constexpr const unsigned grid_size = 16;
 static void load_grid(voo::h2l_buffer * buf) {
   voo::mapmem m { buf->host_memory() };
   auto ptr = static_cast<unsigned *>(*m);
-  auto pp = ptr;
-  for (auto y = 0; y < grid_size; y++) {
-    for (auto x = 0; x < grid_size; x++, ptr++) {
-      *ptr = (x + y) % 2;
-    }
-  }
-  for (auto n = 0; n < 100; n++) {
-    unsigned x = rng::rand(grid_size);
-    unsigned y = rng::rand(grid_size);
-    pp[y * grid_size + x] ^= 1;
-  }
+  for (auto i = 0; i < grid_size * grid_size; i++, ptr++) *ptr = 0;
 }
 
 static void translate() {

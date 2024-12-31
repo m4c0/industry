@@ -16,6 +16,19 @@ layout(location = 0) in  vec2 frag_pos;
 layout(location = 0) out vec4 colour;
 layout(location = 1) out vec4 selection;
 
+vec3 sprite(vec2 p, uint id) {
+  switch (id) {
+    case  0: return vec3(0);
+    case  1: return vec3(0, 0, 1);
+    case  2: return vec3(0, 1, 0);
+    default: return vec3(1, 0, 1);
+  }
+}
+
+vec3 merge_mix(vec3 a, vec3 b, float f) {
+  return mix(a, b, smoothstep(0.95, 1.0, f) * 0.5);
+}
+
 void main() {
   float n = scale;
 
@@ -36,11 +49,12 @@ void main() {
     uint spr_xy = sprites[(id.y + nei.y) * grid_size + id.x + nei.x];
 
     vec2 f = abs(fract(p) * 2.0 - 1.0);
+    vec2 pp = fract(p);
 
-    vec3 c0 = vec3(spr);
-    vec3 cx = mix(c0, vec3(spr_x), smoothstep(0.95, 1.0, f.x) * 0.5);
-    vec3 cy = mix(c0, vec3(spr_y), smoothstep(0.95, 1.0, f.y) * 0.5);
-    vec3 cxy = mix(c0, vec3(spr_xy), smoothstep(0.95, 1.0, f.x * f.y) * 0.5);
+    vec3 c0  = sprite(pp, spr);
+    vec3 cx  = merge_mix(c0, sprite(pp, spr_x),  f.x);
+    vec3 cy  = merge_mix(c0, sprite(pp, spr_y),  f.y);
+    vec3 cxy = merge_mix(c0, sprite(pp, spr_xy), f.x * f.y);
     c = (spr == spr_y && spr == spr_x)
       ? cxy
       : (spr == spr_x)
