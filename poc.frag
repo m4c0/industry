@@ -16,10 +16,35 @@ layout(location = 0) in  vec2 frag_pos;
 layout(location = 0) out vec4 colour;
 layout(location = 1) out vec4 selection;
 
+vec2 random(ivec2 p) {
+  int n = p.x + p.y*11111;
+  // Hugo Elias hash
+  n = (n << 13) ^ n;
+  n = (n * (n * n * 15731 + 789221) + 1376312589) >> 16;
+  return vec2(cos(float(n)), sin(float(n)));
+}
+// https://www.shadertoy.com/view/XdXGW8
+float noise(vec2 p) {
+  ivec2 i = ivec2(floor(p));
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float x0y0 = dot(random(i + ivec2(0, 0)), f - vec2(0, 0));
+  float x1y0 = dot(random(i + ivec2(1, 0)), f - vec2(1, 0));
+  float x0y1 = dot(random(i + ivec2(0, 1)), f - vec2(0, 1));
+  float x1y1 = dot(random(i + ivec2(1, 1)), f - vec2(1, 1));
+  float y0 = mix(x0y0, x1y0, u.x);
+  float y1 = mix(x0y1, x1y1, u.x);
+  return mix(y0, y1, u.y);
+}
+
+vec3 s_background(vec2 p) {
+  return vec3(0.1, 0.11, 0.12);
+}
+
 vec3 blank(vec2 p) { return vec3(0); }
 
 vec3 clicker(vec2 p) {
-  return vec3(1, 0, 0);
+  return s_background(p);
 }
 
 vec3 sprite(vec2 p, uint id) {
