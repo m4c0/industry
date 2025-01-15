@@ -41,7 +41,7 @@ vec3 s_background(vec2 p) {
   return vec3(0.1, 0.11, 0.12);
 }
 
-vec3 blank(vec2 p) { return vec3(0); }
+vec3 blank(vec2 p) { return vec3(0.01); }
 
 vec3 clicker(vec2 p) {
   return s_background(p);
