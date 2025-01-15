@@ -14,6 +14,7 @@ static constexpr const dotz::ivec2 nil { 10000 };
 
 static struct upc {
   dotz::vec2 aspect;
+  dotz::vec2 selection = nil;
   dotz::vec2 displ {};
   float scale = 6;
 } g_pc;

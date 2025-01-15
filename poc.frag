@@ -4,6 +4,7 @@ layout(constant_id = 0) const int grid_size = 16;
 
 layout(push_constant) uniform u_ {
   layout(offset = 8)
+  vec2 selected;
   vec2 displ;
   float scale;
 };
