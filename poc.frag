@@ -1,10 +1,12 @@
 #version 450
+#extension GL_GOOGLE_include_directive : require
+#include "../glslinc/inigo.glsl"
 
 layout(constant_id = 0) const int grid_size = 16;
 
 layout(push_constant) uniform u_ {
   layout(offset = 8)
-  vec2 selected;
+  ivec2 selected;
   vec2 displ;
   float scale;
 };
@@ -60,6 +62,14 @@ vec3 merge_mix(vec3 a, vec3 b, float f) {
   return mix(a, b, smoothstep(0.95, 1.0, f) * 0.5);
 }
 
+vec4 sel_sprite(vec2 p) {
+  float d = sd_box(p, vec2(0.9)) - 0.05;
+  d = abs(d) - 0.01;
+
+  vec3 c = vec3(1.0);
+  return vec4(c, 1.0 - smoothstep(0, 0.03, d));
+}
+
 void main() {
   float n = scale;
 
@@ -80,7 +90,7 @@ void main() {
     uint spr_xy = sprites[(id.y + nei.y) * grid_size + id.x + nei.x];
 
     vec2 f = abs(fract(p) * 2.0 - 1.0);
-    vec2 pp = fract(p);
+    vec2 pp = fract(p) * 2.0 - 1.0;
 
     vec3 c0  = sprite(pp, spr);
     vec3 cx  = merge_mix(c0, sprite(pp, spr_x),  f.x);
@@ -95,6 +105,11 @@ void main() {
       : (f.x > f.y ? cx : cy);
     sel.xy = id / 256.0;
     sel.w = 1;
+
+    if (id == selected) {
+      vec4 cc = sel_sprite(pp);
+      c = mix(c, cc.rgb, cc.a);
+    }
   }
 
   colour = vec4(c, 1);

@@ -14,11 +14,10 @@ static constexpr const dotz::ivec2 nil { 10000 };
 
 static struct upc {
   dotz::vec2 aspect;
-  dotz::vec2 selection = nil;
+  dotz::ivec2 selected = nil;
   dotz::vec2 displ {};
   float scale = 6;
 } g_pc;
-static dotz::ivec2 g_selection = nil;
 
 enum sprite {
   s_blank   = 0,
@@ -45,7 +44,7 @@ struct init : public voo::casein_thread {
     using namespace casein;
     handle(MOUSE_MOVE, M_WHEEL, translate);
     handle(MOUSE_DOWN, [] {
-      silog::log(silog::debug, "%d %d", g_selection.x, g_selection.y);
+      silog::log(silog::debug, "%d %d", g_pc.selected.x, g_pc.selected.y);
     });
 
     g_sprites[grid_size / 2][grid_size / 2] = s_clicker;
@@ -120,6 +119,9 @@ struct init : public voo::casein_thread {
         if (nxt.y < min.y) nxt.y -= (nxt.y - min.y) * 0.3;
         g_pc.displ = nxt;
 
+        int mx = casein::mouse_pos.x * casein::screen_scale_factor;
+        int my = casein::mouse_pos.y * casein::screen_scale_factor;
+
         sw.queue_one_time_submit(dq.queue(), [&](auto pcb) {
           voo::cmd_render_pass scb {vee::render_pass_begin {
             .command_buffer = *pcb,
@@ -138,15 +140,16 @@ struct init : public voo::casein_thread {
           vee::cmd_bind_gr_pipeline(*scb, *p);
           oq.run(*scb, 0, 1);
 
-          int mx = casein::mouse_pos.x * casein::screen_scale_factor;
-          int my = casein::mouse_pos.y * casein::screen_scale_factor;
           cbuf.cmd_copy_to_host(*scb, { mx, my }, { 1, 1 }, hbuf.buffer());
         });
 
-        auto mem = hbuf.map();
-        auto pick = static_cast<unsigned char *>(*mem);
-        if (pick[3]) g_selection = { pick[0], pick[1] };
-        else g_selection = nil;
+        if (mx > 0 && my > 0 && 
+            mx < sw.extent().width && my < sw.extent().height) {
+          auto mem = hbuf.map();
+          auto pick = static_cast<unsigned char *>(*mem);
+          if (pick[3]) g_pc.selected = { pick[0], pick[1] };
+          else g_pc.selected = nil;
+        } else g_pc.selected = nil;
       });
     }
   }
