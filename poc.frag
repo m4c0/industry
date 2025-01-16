@@ -105,11 +105,12 @@ void main() {
       : (f.x > f.y ? cx : cy);
     sel.xy = id / 256.0;
     sel.w = 1;
+  }
 
-    if (id == selected) {
-      vec4 cc = sel_sprite(pp);
-      c = mix(c, cc.rgb, cc.a);
-    }
+  if (sprites[selected.y * grid_size + selected.x] != 0) {
+    vec2 pp = (p - selected) * 2.0 - 1.0;
+    vec4 cc = sel_sprite(pp);
+    c = mix(c, cc.rgb, cc.a);
   }
 
   colour = vec4(c, 1);
