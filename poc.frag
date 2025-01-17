@@ -9,6 +9,7 @@ layout(push_constant) uniform u_ {
   ivec2 selected;
   vec2 displ;
   float scale;
+  float time;
 };
 
 layout(binding = 0) buffer b_ {
@@ -65,6 +66,8 @@ vec3 merge_mix(vec3 a, vec3 b, float f) {
 vec4 sel_sprite(vec2 p) {
   float d = sd_box(p, vec2(0.9)) - 0.05;
   d = 0.004 / clamp(abs(d), 0, 1);
+
+  d *= sin((d + time));
 
   vec3 c = vec3(1.0);
   return vec4(c, d);

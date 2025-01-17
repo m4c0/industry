@@ -7,6 +7,7 @@ import dotz;
 import hai;
 import rng;
 import silog;
+import sitime;
 import vee;
 import voo;
 
@@ -17,6 +18,7 @@ static struct upc {
   dotz::ivec2 selected = nil;
   dotz::vec2 displ {};
   float scale = 6;
+  float time;
 } g_pc;
 
 enum sprite {
@@ -56,6 +58,8 @@ struct init : public voo::casein_thread {
     voo::device_and_queue dq { "poc" };
     auto pd = dq.physical_device();
     auto s = dq.surface();
+
+    sitime::stopwatch time {};
 
     while (!interrupted()) {
       auto rp = vee::create_render_pass({{
@@ -123,6 +127,8 @@ struct init : public voo::casein_thread {
         int my = casein::mouse_pos.y * casein::screen_scale_factor;
 
         sw.queue_one_time_submit(dq.queue(), [&](auto pcb) {
+          g_pc.time = time.millis() / 1000.0f;
+
           voo::cmd_render_pass scb {vee::render_pass_begin {
             .command_buffer = *pcb,
             .render_pass = *rp,
