@@ -8,6 +8,7 @@ import hai;
 import rng;
 import silog;
 import sitime;
+import vapp;
 import vee;
 import voo;
 
@@ -41,8 +42,8 @@ static void translate() {
   g_pc.displ = g_pc.displ - d * 100.0;
 }
 
-struct init : public voo::casein_thread {
-  init() : casein_thread {} {
+struct init : public vapp {
+  init() : vapp {} {
     using namespace casein;
     handle(MOUSE_MOVE, M_WHEEL, translate);
     handle(MOUSE_DOWN, [] {
