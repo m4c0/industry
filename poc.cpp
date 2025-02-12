@@ -54,7 +54,7 @@ struct init : public vapp {
   }
 
   void run() {
-    constexpr const auto fmt = vee::image_format_rgba_unorm;
+    constexpr const auto fmt = VK_FORMAT_R8G8B8A8_SRGB;
 
     voo::device_and_queue dq { "poc" };
     auto pd = dq.physical_device();
@@ -63,10 +63,23 @@ struct init : public vapp {
     sitime::stopwatch time {};
 
     while (!interrupted()) {
-      auto rp = vee::create_render_pass({{
-        vee::create_colour_attachment(pd, s),
-        vee::create_colour_attachment(fmt),
-      }});
+      auto rp = vee::create_render_pass({
+        .attachments {{
+          vee::create_colour_attachment(pd, s),
+          vee::create_colour_attachment({ .format = fmt }),
+        }},
+        .subpasses {{
+          vee::create_subpass({
+            .colours {{
+              create_attachment_ref(0, vee::image_layout_color_attachment_optimal),
+              create_attachment_ref(1, vee::image_layout_color_attachment_optimal),
+            }},
+          }),
+        }},
+        .dependencies {{
+          vee::create_colour_dependency(),
+        }},
+      });
       voo::offscreen::colour_buffer cbuf { pd, voo::extent_of(pd, s), fmt };
       voo::offscreen::host_buffer hbuf { pd, { 1, 1 } };
 
@@ -105,7 +118,7 @@ struct init : public vapp {
         vee::storage_buffer(1),
       });
       auto dset = vee::allocate_descriptor_set(*dpool, *dsl);
-      vee::update_descriptor_set_with_storage(dset, 0, buf.data().local_buffer());
+      vee::update_descriptor_set(dset, 0, buf.data().local_buffer());
 
       if (sw.aspect() > 1.0) {
         g_pc.aspect = { sw.aspect(), 1.0f };
