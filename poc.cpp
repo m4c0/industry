@@ -56,7 +56,7 @@ struct init : public vapp {
   void run() {
     constexpr const auto fmt = VK_FORMAT_R8G8B8A8_SRGB;
 
-    voo::device_and_queue dq { "poc" };
+    voo::device_and_queue dq { "poc", casein::native_ptr };
     auto pd = dq.physical_device();
     auto s = dq.surface();
 
