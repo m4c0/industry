@@ -67,6 +67,7 @@ struct init : public vapp {
         .attachments {{
           vee::create_colour_attachment(pd, s),
           vee::create_colour_attachment({ .format = fmt }),
+          vee::create_depth_attachment(),
         }},
         .subpasses {{
           vee::create_subpass({
@@ -74,6 +75,7 @@ struct init : public vapp {
               create_attachment_ref(0, vee::image_layout_color_attachment_optimal),
               create_attachment_ref(1, vee::image_layout_color_attachment_optimal),
             }},
+            .depth_stencil = create_attachment_ref(2, vee::image_layout_depth_stencil_attachment_optimal),
           }),
         }},
         .dependencies {{
